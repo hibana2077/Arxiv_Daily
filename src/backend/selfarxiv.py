@@ -1,42 +1,63 @@
-import requests
-import time
-from fake_useragent import UserAgent
-import xml.etree.ElementTree as ET
+import urllib.parse
+import urllib.request
+import feedparser
+from datetime import datetime
 
-# Set the API endpoint URL
-BASE_URL = 'http://export.arxiv.org/api/query?'
+def fetch_daily_cs_papers(date):
+  base_url = 'http://export.arxiv.org/api/query?'
 
-def Search_paper(keywords:str,start=0) -> list[dict]:
-    """
-    Search for papers on arXiv based on the given keywords.
+  # Format the date as required by arXiv API
+  date_str = date.strftime('%Y%m%d')
 
-    Args:
-        keywords (str): The keywords to search for.
+  # Create the query parameters
+  # Add 'cat:cs.*' to limit results to Computer Science
+  search_query = f'cat:cs.* AND submittedDate:[{date_str}000000 TO {date_str}235959]'
+  params = {
+      'search_query': search_query,
+      'start': 0,
+      'max_results': 1000,  # Adjust as needed
+      'sortBy': 'submittedDate',
+      'sortOrder': 'descending'
+  }
 
-    Returns:
-        list[dict]: A list of dictionaries representing the found papers. Each dictionary contains the following keys:
-            - 'title': The title of the paper.
-            - 'summary': The summary of the paper.
-            - 'arxiv_id': The arXiv ID of the paper.
-            - 'authors': A list of authors of the paper.
-    """
-    search_query = 'cs:' + keywords
-    # all -> all fields
-    # cs.AI -> Computer Science - Artificial Intelligence
-    start = start
-    max_results = 15
-    ua = UserAgent()
-    user_agent = ua.random
-    headers = {'user-agent': user_agent}
-    query = f'{BASE_URL}search_query={search_query}&start={start}&max_results={max_results}'
-    response = requests.get(query, headers=headers)
-    papers = []
-    if response.status_code == 200:
-        root = ET.fromstring(response.text)
-        for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
-            title = entry.find('{http://www.w3.org/2005/Atom}title').text
-            summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
-            arxiv_id = entry.find('{http://www.w3.org/2005/Atom}id').text
-            authors = [author.find('{http://www.w3.org/2005/Atom}name').text for author in entry.findall('{http://www.w3.org/2005/Atom}author')]
-            papers.append({'title': title, 'summary': summary, 'arxiv_id': arxiv_id, 'authors': authors})
-    return papers
+  # Encode the parameters and create the full URL
+  query = urllib.parse.urlencode(params)
+  url = base_url + query
+
+  # Fetch the results
+  with urllib.request.urlopen(url) as response:  
+      parse = feedparser.parse(response.read())
+
+  # Process and return the results
+  papers = []
+#   cnt = 0
+  for entry in parse.entries:
+    #   if cnt == 0:print(type(entry), entry.keys())
+    #   cnt += 1
+      papers.append({
+          'title': entry.title,
+          'authors': [author.name for author in entry.authors],
+          'summary': entry.summary,
+          'link': entry.link,
+          'arxiv_comment': entry.arxiv_comment if 'arxiv_comment' in entry else '',
+          'categories': [tag['term'] for tag in entry.tags if tag['scheme'] == 'http://arxiv.org/schemas/atom'],
+          'published': datetime(*entry.published_parsed[:6])
+      })
+
+  return papers
+
+if __name__ == '__main__':
+    # Example usage
+    # today = datetime.now()
+    # yesterday = today.replace(day=today.day - 3)
+    # cs_papers = fetch_daily_cs_papers(yesterday)
+    sp_date = datetime(2024, 7, 15)
+    cs_papers = fetch_daily_cs_papers(sp_date)
+    # for paper in cs_papers:
+    #     print(f"Title: {paper['title']}")
+    #     print(f"Authors: {', '.join(paper['authors'])}")
+    #     print(f"Categories: {', '.join(paper['categories'])}")
+    #     print(f"Link: {paper['link']}")
+    #     # print(f"Published: {paper['published']}")
+    #     print("---")
+    print(f"The number of papers fetched: {len(cs_papers)}")

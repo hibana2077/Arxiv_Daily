@@ -6,11 +6,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from fastapi import FastAPI, File, UploadFile
+from datetime import datetime
 from fastapi.responses import JSONResponse
 import selfarxiv
 import redis
 import os
 import uvicorn
+import re
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -54,6 +56,30 @@ def read_root():
         dict: A dictionary with the message "Hello: World".
     """
     return {"Hello": "World"}
+
+@app.get("/daily-cs-papers")
+def fetch_daily_cs_papers(year: int, month: int, day: int):
+    """
+    A function that fetches daily CS papers from arXiv.
+
+    Args:
+        year (int): The year of the date.
+        month (int): The month of the date.
+        day (int): The day of the date.
+
+    Returns:
+        dict[str,list[dict]]: A dictionary with the fetched papers.
+    """
+    filted_papers = []
+    date = datetime(year, month, day)
+    papers = selfarxiv.fetch_daily_cs_papers(date)
+    pattern = re.compile(r'(?:Accept.*?\b(?:CVPR|ECCV|NeurIPS|ICML|ICLR|AAAI|KDD|ACL|NAACL|EMNLP|ICCV|SIGGRAPH)\b|\b(?:CVPR|ECCV|NeurIPS|ICML|ICLR|AAAI|KDD|ACL|NAACL|EMNLP|ICCV|SIGGRAPH)\b)', re.IGNORECASE)
+    
+    for paper in papers:
+        if pattern.search(paper["arxiv_comment"]):
+            filted_papers.append(paper)
+    
+    return {"papers": filted_papers}
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0
