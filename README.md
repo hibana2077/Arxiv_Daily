@@ -1,1 +1,1 @@
-# Arxiv_Daily
+# Arxiv Daily
