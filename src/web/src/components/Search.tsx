@@ -1,5 +1,6 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { useState } from 'react'
+import { ClickButton } from '../store';
 
 export function Search() {
   const [year, setYear] = useState('');
@@ -9,6 +10,7 @@ export function Search() {
   const handleSearch = () => {
     console.log('Search clicked:', { year, month, day });
     // Add your search logic here
+    ClickButton.set(true);
   };
 
   const max_year = new Date().getFullYear();
