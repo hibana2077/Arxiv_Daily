@@ -1,16 +1,4 @@
 services:
-  web:
-    build: ./web
-    ports:
-      - "4321:4321"
-    environment:
-      BACKEND_SERVER: "http://backend:8081"
-      HOST: "0.0.0.0"
-      PORT: 4321
-    depends_on:
-      - backend
-    networks:
-      - arxiv-dayli-net
 
   backend:
     build: ./backend
@@ -25,6 +13,14 @@ services:
       REDIS_PORT: 6379
     depends_on:
       - db
+    networks:
+      - arxiv-dayli-net
+
+  discord_webhook:
+    build: ./discord_webhook
+    environment:
+      BACKEND_URL: "http://backend:8081"
+      DISCORD_WEBHOOK_URL: "YOUR_DISCORD_WEBHOOK_URL"
     networks:
       - arxiv-dayli-net
 
