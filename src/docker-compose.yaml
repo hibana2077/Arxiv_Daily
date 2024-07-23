@@ -3,8 +3,6 @@ services:
     build: ./web
     ports:
       - "4321:4321"
-    volumes:
-      - ./web:/app
     environment:
       BACKEND_SERVER: "http://backend:8081"
       HOST: "0.0.0.0"
