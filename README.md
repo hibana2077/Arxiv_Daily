@@ -13,7 +13,7 @@ This is a simple script that sends you an Discord notify every day with the late
 ## Features
 
 - Send a daily digest of the latest papers from arxiv in the Computer Science category.
-- Each paper will have a title, authors, link, and it Innovation.
+- Each paper will have a title, authors, link, and it Innovation(new).
 
 ## How to use
 
