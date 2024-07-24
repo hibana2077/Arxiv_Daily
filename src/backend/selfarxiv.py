@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # today = datetime.now()
     # yesterday = today.replace(day=today.day - 3)
     # cs_papers = fetch_daily_cs_papers(yesterday)
-    sp_date = datetime(2024, 7, 15)
+    sp_date = datetime(2024, 7, 20)
     cs_papers = fetch_daily_cs_papers(sp_date)
     # for paper in cs_papers:
     #     print(f"Title: {paper['title']}")

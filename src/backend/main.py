@@ -1,10 +1,6 @@
-from langchain_community.vectorstores.faiss import FAISS
-from langchain_community.embeddings import OllamaEmbeddings
 from langchain_core.pydantic_v1 import BaseModel, Field
 from contextlib import asynccontextmanager
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from fastapi import FastAPI, File, UploadFile
 from datetime import datetime
 from fastapi.responses import JSONResponse
@@ -13,24 +9,20 @@ import redis
 import os
 import uvicorn
 import re
-import requests
 from fastapi.middleware.cors import CORSMiddleware
 
 # ollama_server = os.getenv("OLLAMA_SERVER", "http://localhost:11434")
 redis_server = os.getenv("REDIS_SERVER", "localhost")
 redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
+GROQ_API_TOKEN = os.getenv("GROQ_API_TOKEN", "YOUR_GROQ_API")
 # embeddings = OllamaEmbeddings(base_url=ollama_server)
 
-class Keywords(BaseModel):
-
-    keywords: list = Field(description="The keywords generated from the description")
+class PaperInfo(BaseModel):
+    Innovation_or_Breakthrough: str = Field(..., title="Innovation or Breakthrough of the paper")
 
 counter_db = redis.Redis(host=redis_server, port=redis_port, db=0) # string
-user_rec_db = redis.Redis(host=redis_server, port=redis_port, db=1) # hash
-idea_db = redis.Redis(host=redis_server, port=redis_port, db=2) # hash
-suggest_db = redis.Redis(host=redis_server, port=redis_port, db=3) # hash
-paper_sketch_db = redis.Redis(host=redis_server, port=redis_port, db=4) # hash
+daily_check_db = redis.Redis(host=redis_server, port=redis_port, db=1) # set
 
 app = FastAPI()
 
@@ -79,7 +71,58 @@ def fetch_daily_cs_papers(year: int, month: int, day: int):
         if pattern.search(paper["arxiv_comment"]):
             filted_papers.append(paper)
     
-    return {"papers": filted_papers}
+    filted_papers = filted_papers[:5]
+    if len(filted_papers) == 0:
+        filted_papers = papers[:5]
+    print(f"Function name: fetch_daily_cs_papers, filted_papers: {filted_papers}")
+    chat = ChatGroq(
+        temperature=0,
+        model="gemma2-9b-it",
+        # model="llama3-70b-8192",
+        groq_api_key=GROQ_API_TOKEN,
+    )
+    structured_llm = chat.with_structured_output(PaperInfo)
+
+    final_papers = []
+
+    for paper in filted_papers:
+        out_put = structured_llm.invoke(f"Please description the innovation or breakthrough of the Paper Summary: {paper['summary']}")
+        print(f"Function name: fetch_daily_cs_papers, output: {out_put}")
+        paper["Innovation_or_Breakthrough"] = out_put.Innovation_or_Breakthrough
+
+        final_papers.append(paper)
+    print(f"Function name: fetch_daily_cs_papers, final_papers: {final_papers}")
+    return {"papers": final_papers}
+
+@app.post("/daily_check")
+def daily_check(data: dict):
+    """
+    A function that checks if the daily papers have been fetched.
+
+    Returns:
+        dict: A dictionary with the message "Daily papers have been fetched".
+    """
+    year = data["year"]
+    month = data["month"]
+    day = data["day"]
+    date = datetime(year, month, day)
+    date_str = date.strftime("%Y-%m-%d")
+    key = f"{date_str}_fetched"
+    daily_check_db.sadd(key, "fetched")
+    return {"message": "DB updated"}
+
+@app.get("/daily_check")
+def get_daily_check(year: int, month: int, day: int):
+    """
+    A function that checks if the daily papers have been fetched.
+
+    Returns:
+        dict: A dictionary with the message "Daily papers have been fetched".
+    """
+    date = datetime(year, month, day)
+    date_str = date.strftime("%Y-%m-%d")
+    key = f"{date_str}_fetched"
+    return {"fetched": daily_check_db.sismember(key, "fetched")}
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0
