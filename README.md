@@ -10,6 +10,11 @@ This is a simple script that sends you an Discord notify every day with the late
 - Langchain
 - Docker
 
+## Features
+
+- Send a daily digest of the latest papers from arxiv in the Computer Science category.
+- Each paper will have a title, authors, link, and it Innovation.
+
 ## How to use
 
 ### 1. Clone the repository
