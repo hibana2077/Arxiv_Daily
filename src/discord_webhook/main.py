@@ -45,15 +45,17 @@ def gen_webhook_payload() -> dict:
             for paper in papers:
                 field = {
                     'name': f'{paper.get("title")}',
-                    'value': f'作者：{', '.join(paper.get("authors"))}\n連結：[閱讀原文]({paper.get("link")})\n創新點：{paper.get("Innovation_or_Breakthrough")}\n\n',
+                    'value': f'Authors:{', '.join(paper.get("authors"))}\nLink:[Read]({paper.get("link")})\nInnovation:{paper.get("Innovation_or_Breakthrough")}\n\n',
                     'inline': False
                 }
                 fields.append(field)
             return {
                 'content': 'Daily Arxiv Papers Digest',
                 'embeds': [{
-                    'title': '最新的 Arxiv 論文精選',
-                    'description': '以下是今日精選的幾篇論文及其創新點。',
+                    # 'title': '最新的 Arxiv 論文精選',
+                    'title': 'Daily Arxiv Papers Digest',
+                    # 'description': '以下是今日精選的幾篇論文及其創新點。',
+                    'description': 'Here are some selected papers and their innovations today.',
                     'color': 0xb31b1b,  # Cornell Red
                     'thumbnail': {
                         'url': 'https://info.arxiv.org/brand/images/brand-logo-primary.jpg'
