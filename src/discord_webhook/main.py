@@ -104,7 +104,7 @@ if __name__ == '__main__':
                             time.sleep(5)
                     else:
                         logging.info('Webhook already sent today.')
-                        time.sleep(5)
+                        time.sleep(3600)  # Wait for an hour before checking again
                 else:
                     logging.error('Failed to check if webhook already sent today.')
                     time.sleep(5)
