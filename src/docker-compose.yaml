@@ -25,7 +25,6 @@ services:
       DISCORD_WEBHOOK_URL: ""
       DAILY_SEND_TIME: "09:00"
       TZ: "Asia/Tokyo"
-      # TZ: "Asia/Taipei"
     networks:
       - arxiv-dayli-net
 
