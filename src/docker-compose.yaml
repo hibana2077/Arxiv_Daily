@@ -9,7 +9,7 @@ services:
     environment:
       HOST: "0.0.0.0"
       GROQ_API_TOKEN: ""
-      INTERESTS: "cs.AI,cs.CL,cs.CV,cs.LG,cs.NE,cs.RO,cs.SY"
+      INTERESTS: "cs.IT,cs.CV,cs.LG,cs.NE"
       REDIS_SERVER: "db"
       REDIS_PORT: 6379
       TZ: "Asia/Tokyo"
