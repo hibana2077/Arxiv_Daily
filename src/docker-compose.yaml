@@ -9,10 +9,10 @@ services:
     environment:
       HOST: "0.0.0.0"
       GROQ_API_TOKEN: ""
+      INTERESTS: "cs.AI,cs.CL,cs.CV,cs.LG,cs.NE,cs.RO,cs.SY"
       REDIS_SERVER: "db"
       REDIS_PORT: 6379
       TZ: "Asia/Tokyo"
-      # TZ: "Asia/Taipei"
     depends_on:
       - db
     networks:
@@ -34,28 +34,12 @@ services:
     image: redis:latest
     environment:
       TZ: "Asia/Tokyo"
-      # TZ: "Asia/Taipei"
     ports:
       - "6379:6379"
     volumes:
       - ./data/redis-data:/data
     networks:
       - arxiv-dayli-net
-    
-  # ollama:
-  #   image: ollama/ollama:latest
-  #   ports:
-  #     - "11434:11434"
-  #   networks:
-  #     - arxiv-dayli-net
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             capabilities: [gpu]
-  #   volumes:
-  #     - ./ollama:/root/.ollama:rw
 
 networks:
   arxiv-dayli-net:

@@ -11,12 +11,10 @@ import uvicorn
 import re
 from fastapi.middleware.cors import CORSMiddleware
 
-# ollama_server = os.getenv("OLLAMA_SERVER", "http://localhost:11434")
 redis_server = os.getenv("REDIS_SERVER", "localhost")
 redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
 GROQ_API_TOKEN = os.getenv("GROQ_API_TOKEN", "YOUR_GROQ_API")
-# embeddings = OllamaEmbeddings(base_url=ollama_server)
 
 class PaperInfo(BaseModel):
     Innovation_or_Breakthrough: str = Field(..., title="Innovation or Breakthrough of the paper")
@@ -63,7 +61,7 @@ def fetch_daily_cs_papers(year: int, month: int, day: int):
     pattern = re.compile(r'(?:Accept.*?\b(?:CVPR|ECCV|NeurIPS|ICML|ICLR|AAAI|KDD|ACL|NAACL|EMNLP|ICCV|SIGGRAPH)\b|\b(?:CVPR|ECCV|NeurIPS|ICML|ICLR|AAAI|KDD|ACL|NAACL|EMNLP|ICCV|SIGGRAPH)\b)', re.IGNORECASE)
     
     for paper in papers:
-        if pattern.search(paper["arxiv_comment"]):
+        if pattern.search(paper["summary"]):
             filted_papers.append(paper)
     
     filted_papers = filted_papers[:5]
