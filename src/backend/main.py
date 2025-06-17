@@ -34,11 +34,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     _ = requests.post(f"{ollama_server}/api/pull", json={"name": "nomic-embed-text"})
-#     _ = requests.post(f"{ollama_server}/api/pull", json={"name": "jina/jina-embeddings-v2-snall-en"})
-
 @app.get("/")
 def read_root():
     """
@@ -77,8 +72,7 @@ def fetch_daily_cs_papers(year: int, month: int, day: int):
     print(f"Function name: fetch_daily_cs_papers, filted_papers: {filted_papers}")
     chat = ChatGroq(
         temperature=0,
-        model="gemma2-9b-it",
-        # model="llama3-70b-8192",
+        model="meta-llama/llama-4-maverick-17b-128e-instruct",
         groq_api_key=GROQ_API_TOKEN,
     )
     structured_llm = chat.with_structured_output(PaperInfo)
